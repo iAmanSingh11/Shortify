@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-test:
+    name: Backend — lint & test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check
+        run: find src -name "*.js" -print0 | xargs -0 -n1 node --check
+
+      - name: Run tests
+        env:
+          NODE_ENV: test
+          JWT_ACCESS_SECRET: ci-test-access-secret
+          JWT_REFRESH_SECRET: ci-test-refresh-secret
+          REDIS_URL: redis://localhost:6379
+          CLIENT_URL: http://localhost:5173
+          BASE_URL: http://localhost:5000
+          BOOTSTRAP_ADMIN_EMAIL: admin@example.com
+        run: npm test
+
+  frontend-build:
+    name: Frontend — lint & build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        env:
+          VITE_API_URL: https://placeholder-api.example.com
+        run: npm run build
+
+  # Deployment itself is handled by Vercel's and Render's native GitHub
+  # integrations (auto-deploy on push to `main`), which is the recommended,
+  # zero-config path on their free tiers. This job is an optional extra: it
+  # pings your Render deploy hook so a deploy is triggered only after tests
+  # pass, giving you a real "tests gate deployment" pipeline.
+  #
+  # To enable it:
+  #   1. In Render, open your backend service -> Settings -> Deploy Hook, copy the URL.
+  #   2. Add it as a repository secret named RENDER_DEPLOY_HOOK_URL.
+  #   3. Uncomment the job below.
+  #
+  # deploy-backend:
+  #   name: Trigger Render deploy
+  #   needs: [backend-test, frontend-build]
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Call Render deploy hook
+  #       run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
