@@ -5,8 +5,7 @@ Shortify : A full stack URL shortening platform inspired by Bitly, built with a 
 
 
 ## 🌐 Live Demo
-
-
+https://shortify-five-iota.vercel.app
 
 # ✨ Features
 
