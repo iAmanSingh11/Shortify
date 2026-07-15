@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { LinkIcon } from 'lucide react';
 import Logo from '../components/Logo.jsx';
-
 const NotFoundPage = () => (
   <div className="min-h-screen flex items-center justify-center bg-ink-50 px-4 text-center">
     <div>
