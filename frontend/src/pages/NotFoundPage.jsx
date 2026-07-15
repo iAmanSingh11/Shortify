@@ -1,4 +1,4 @@
-import { Link } from 'react router dom';
+import { Link } from 'react-router-dom';
 import { LinkIcon } from 'lucide react';
 import Logo from '../components/Logo.jsx';
 
